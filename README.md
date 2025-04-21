@@ -2,7 +2,7 @@
 
 东南大学研究生人文讲座自动预约脚本。
 
-有人反馈，该脚本无法在Windows系统下正常运行，推荐使用Linux或者MacOS系统运行。
+- Update on 2025.4.21: 经过测试，能够在最新的讲座系统中使用
 
 ## 接口账户配置
 
@@ -43,4 +43,4 @@
 
 ## 鸣谢
 
-本脚本基于 [seu-lecture-reserve](https://github.com/404874351/seu-lecture-reserve) 进行修改。
+本脚本基于 [seu-lecture-reserve](https://github.com/yongliang-wu/seu-lecture-reserve) 进行修改。

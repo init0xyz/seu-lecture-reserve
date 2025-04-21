@@ -1,7 +1,7 @@
 import requests
-import base64
 import time
 from apscheduler.schedulers.blocking import BlockingScheduler
+import json
 
 # 验证码解析参数
 verify_code_params = {
@@ -18,7 +18,7 @@ lecture_headers = {
   'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
   'Cache-Control': 'max-age=0',
   'Connection': 'keep-alive',
-  'Cookie': '<your cookie>',
+  'Cookie': '<your cookie data>',
   'Sec-Fetch-Dest': 'document',
   'Sec-Fetch-Mode': 'navigate',
   'Sec-Fetch-Site': 'none',
@@ -37,7 +37,7 @@ verify_code_headers = {
 }
 
 # 目标讲座关键词，请尽可能指向唯一目标
-lecture_keys = ["lecture1", "lecture2"]
+lecture_keys = ["解码依恋"]
 
 def parse_verify_code(img_base64):
     """
@@ -77,7 +77,7 @@ def get_target_lectures(keys):
     """
     payload = {}
 
-    url = "https://ehall.seu.edu.cn/gsapp/sys/yddjzxxtjappseu/modules/hdyy/queryActivityList.do"
+    url = "https://ehall.seu.edu.cn/gsapp/sys/jzxxtjapp/hdyy/queryActivityList.do"
 
     r = requests.request("GET", url, headers=lecture_headers, data=payload)
     
@@ -85,8 +85,9 @@ def get_target_lectures(keys):
         print("讲座列表接口响应不成功，请检查cookie！")
         return None
     
-    res = r.json()  
-    lecture_list = res['datas']['hdlbList']
+    res = r.json()
+
+    lecture_list = res['datas']
     if lecture_list is None or len(lecture_list) == 0:
         print("当前没有任何讲座可预约！")
         return None
@@ -114,11 +115,11 @@ def get_lecture_verify_code(wid):
     Returns:
         bytes: 验证码图片的base64字节码
     """
-    url='https://ehall.seu.edu.cn/gsapp/sys/yddjzxxtjappseu/modules/hdyy/vcode.do'
+    url = "https://ehall.seu.edu.cn/gsapp/sys/jzxxtjapp/hdyy/vcode.do"
     r = requests.request("GET", url, headers=lecture_headers, params={'_': int(time.time() * 1000)})
     res = r.json()
-    
-    base64_str = res['datas']
+
+    base64_str = res['result']
     base64_str = base64_str[(base64_str.index("base64,") + 7):]
     return bytes(base64_str, encoding='utf-8')
 
@@ -135,12 +136,12 @@ def reserve_lecture(wid, verify_code):
     """
     
     params = {
-        'wid': wid,
-        'vcode': verify_code,
+        'HD_WID': str(wid),
+        'vcode': str(verify_code),
     }
-    url='https://ehall.seu.edu.cn/gsapp/sys/yddjzxxtjappseu/modules/hdyy/addReservation.do'
+    url="https://ehall.seu.edu.cn/gsapp/sys/jzxxtjapp/hdyy/yySave.do"
     
-    r = requests.request("POST", url, headers=lecture_headers, data=params)
+    r = requests.request("POST", url, headers=lecture_headers, data={'paramJson': json.dumps(params)})
 
     res = r.json()
     print('预约接口响应数据: ', res)
@@ -154,12 +155,12 @@ def keep_alive(wid):
     Args:
         wid (str): 讲座id
     """
-    url='https://ehall.seu.edu.cn/gsapp/sys/yddjzxxtjappseu/modules/hdyy/getActivityDetail.do'
-    
+    url="https://ehall.seu.edu.cn/gsapp/sys/jzxxtjapp/modules/hdyy/hdxxxq_cx.do"
+
     r = requests.request("POST", url, headers=lecture_headers, data={'wid': wid})
     
     res = r.json()
-    if res['code'] != 0:
+    if int(res['code']) != 0:
         print('保活失效，请检查cookie！')
     else:
         print('用户身份有效，登录状态保活')
